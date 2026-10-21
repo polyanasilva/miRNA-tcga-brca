@@ -1,8 +1,7 @@
-# Instalação caso não esteja instalado ainda
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#   install.packages("BiocManager")
 
-BiocManager::install(c("TCGAbiolinks", "SummarizedExperiment"))
+# BiocManager::install(c("TCGAbiolinks", "SummarizedExperiment"))
 
 library(TCGAbiolinks)
 library(SummarizedExperiment)
@@ -10,6 +9,7 @@ library(SummarizedExperiment)
 # pasta onde os dados serão salvos
 setwd("~/Documents/workspace/miRNA-tcga-brca")
 dir.create("data", showWarnings = FALSE)
+OUTPUT <- "data/raw"
 
 # como descobrir o que existe para baixar
 projetos <- getGDCprojects()
@@ -35,6 +35,12 @@ table(res_tudo$data_type)
 #   Isoform Expression Qunatification -> contagem por isoforma (isomiR):
 #                                        mais detalhado e maior (~417 MB vs ~60 MB)
 # (os outros, Gene Expression Quantification etc, sao de mRNA)
+
+
+
+# -------------------------------------------------------------
+#        DOWNLOAD DOS DADOS
+# -------------------------------------------------------------
 
 # Montando a consultado (query) de miRNA:
 # Principais argumentos do GDCquery():
@@ -69,7 +75,7 @@ GDCdownload(
 )
 
 # Juntando tudo em uma matriz
-# acredito que cada arquivo .txt representa um paciente. dentro de cada arquivo txt tem um df contendo:
+# cada arquivo .txt representa um paciente. dentro de cada arquivo txt tem um df contendo:
 #   miRNA_ID:  com o id do miRNA
 #   read_count
 #   reads_per_million_miRNA_mapped: RPM já normalizado
@@ -80,7 +86,7 @@ mirna <- GDCprepare(
     query = query_mirna,
     directory = "GDCdata",
     save = TRUE,
-    save.filename = "data/TCGA_BRCA_miRNA_raw.rda"
+    save.filename = paste0(OUTPUT, "/TCGA_BRCA_miRNA_raw.rda")
 )
 
 dim(mirna) #1881 x 3622
@@ -94,13 +100,10 @@ colnames(counts) <- sub("^read_count_", "", colnames(counts))
 rpm <- mirna[, grep("^reads_per_million_miRNA_mapped_", colnames(mirna))]
 colnames(rpm) <- sub("^reads_per_million_miRNA_mapped_", "", colnames(rpm))
 
-# Salva o dado de contagem bruta e normalizado 
-saveRDS(counts, "data/TCGA_BRCA_miRNA_counts.rds")
-saveRDS(rpm,    "data/TCGA_BRCA_miRNA_RPM.rds")
-
-# Salva em .CSV
-write.csv(counts, "data/TCGA_BRCA_miRNA_counts.csv")
-write.csv(rpm, "data/TCGA_BRCA_miRNA_rpm.csv")
+# Salva o dado de contagem bruta e normalizado
+# irei salver em .CSV (se quiser pode salvar em rds(que é mais leve) é só trocar o write.csv por saveRDS)
+write.csv(counts, paste0(OUTPUT, "/TCGA_BRCA_miRNA_counts.csv"))
+write.csv(rpm, paste0(OUTPUT, "/TCGA_BRCA_miRNA_rpm.csv"))
 
 # Download de dados clinicos
 clinical <- GDCquery_clinic(
@@ -109,13 +112,12 @@ clinical <- GDCquery_clinic(
 )
 
 colnames(clinical)
-saveRDS(clinical, "data/TCGA_BRCA_clinical.rds")
-write.csv(clinical, "data/TCGA_BRCA_clinical.csv")
+write.csv(clinical, paste0(OUTPUT, "/TCGA_BRCA_clinical.csv"))
 
 # os subtipos moleculares não estao incluidos no clinical data, para isso iremos importar
 # Subtipos moleculares PAM50 (LumA, LumB, Her2, Basal, Normal):
 subtipos <- TCGAquery_subtype(tumor = "BRCA")
+
 # distribuicao do numero de amostras por subtipo
 table(subtipos$BRCA_Subtype_PAM50)
-saveRDS(subtipos, "data/TCGA_BRCA_subtypes.rds")
-write.csv(subtipos, "data/TCGA_BRCA_subtypes.csv")
+write.csv(subtipos, paste0(OUTPUT, "/TCGA_BRCA_subtypes.csv"))
