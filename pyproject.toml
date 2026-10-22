@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "miRNA-tcga-brca"
+version = "0.1.0"
+description = "Desenvolvimento de modelo prognóstico baseado em miRNA e aprendizado de máquina no câncer de mama"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Polyana Silva" , email = "silvapolyanaa145@gmail.com" }]
+
+[tool.setuptools.packages.find]
+where = ["src"]

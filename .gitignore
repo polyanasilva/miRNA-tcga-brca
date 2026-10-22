@@ -1,8 +1,10 @@
+# dados brutos
 data/
 GDCdata/
 
+# .
+.DS_Store
 .Rproj.user/
-
-01_download_miRNA_BRCA.R
-
+.venv/
 miRNA-tcga-brca.Rproj
+__pycache__/
