@@ -111,13 +111,13 @@ clinical <- GDCquery_clinic(
   type = "clinical"
 )
 
-colnames(clinical)
+# o clinical possui uma coluna que é lista, irei verificar e depois transformar para str
+names(which(sapply(clinical, is.list)))
+clinical$sites_of_involvement <- sapply(clinical$sites_of_involvement, function(x) paste(x, collapse = "; "))
+
 write.csv(clinical, paste0(OUTPUT, "/TCGA_BRCA_clinical.csv"))
 
-# os subtipos moleculares não estao incluidos no clinical data, para isso iremos importar
+
 # Subtipos moleculares PAM50 (LumA, LumB, Her2, Basal, Normal):
 subtipos <- TCGAquery_subtype(tumor = "BRCA")
-
-# distribuicao do numero de amostras por subtipo
-table(subtipos$BRCA_Subtype_PAM50)
 write.csv(subtipos, paste0(OUTPUT, "/TCGA_BRCA_subtypes.csv"))
